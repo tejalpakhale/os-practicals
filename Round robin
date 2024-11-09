@@ -1,0 +1,110 @@
+#include <stdio.h>
+
+struct Process {
+    int pid;         // Process ID
+    int arrival;     // Arrival Time
+    int burst;       // Burst Time
+    int remaining;   // Remaining Time
+    int completion;  // Completion Time
+    int turnaround;  // Turnaround Time
+    int waiting;     // Waiting Time
+};
+
+// Function to implement Round Robin Scheduling
+void roundRobin(struct Process processes[], int n, int quantum) {
+    int time = 0, completed = 0;
+    int i;
+    
+    while (completed < n) {
+        int all_idle = 1;
+        
+        for (i = 0; i < n; i++) {
+            // Check if the process has arrived and is still unfinished
+            if (processes[i].remaining > 0 && processes[i].arrival <= time) {
+                all_idle = 0;
+                
+                // Execute the process for 'quantum' time or until completion
+                if (processes[i].remaining > quantum) {
+                    time += quantum;
+                    processes[i].remaining -= quantum;
+                } else {
+                    // Process completes
+                    time += processes[i].remaining;
+                    processes[i].remaining = 0;
+                    processes[i].completion = time;
+                    completed++;
+                    
+                    // Calculate Turnaround Time and Waiting Time
+                    processes[i].turnaround = processes[i].completion - processes[i].arrival;
+                    processes[i].waiting = processes[i].turnaround - processes[i].burst;
+                }
+            }
+        }
+        
+        // If no process was ready, increment time to the next process arrival
+        if (all_idle) {
+            time++;
+        }
+    }
+}
+
+// Function to print process details
+void printProcessDetails(struct Process processes[], int n) {
+    printf("\nPID\tArrival\tBurst\tCompletion\tTurnaround\tWaiting\n");
+    
+    for (int i = 0; i < n; i++) {
+        printf("%d\t%d\t%d\t%d\t\t%d\t\t%d\n", 
+               processes[i].pid, 
+               processes[i].arrival, 
+               processes[i].burst, 
+               processes[i].completion, 
+               processes[i].turnaround, 
+               processes[i].waiting);
+    }
+}
+
+// Function to calculate and display average waiting and turnaround times
+void calculateAverageTimes(struct Process processes[], int n) {
+    float total_waiting = 0, total_turnaround = 0;
+    
+    for (int i = 0; i < n; i++) {
+        total_waiting += processes[i].waiting;
+        total_turnaround += processes[i].turnaround;
+    }
+    
+    printf("\nAverage Turnaround Time: %.2f\n", total_turnaround / n);
+    printf("Average Waiting Time: %.2f\n", total_waiting / n);
+}
+
+int main() {
+    int n, quantum;
+    
+    // Input the number of processes
+    printf("Enter the number of processes: ");
+    scanf("%d", &n);
+    
+    struct Process processes[n];
+    
+    // Input arrival time and burst time for each process
+    for (int i = 0; i < n; i++) {
+        processes[i].pid = i + 1;
+        printf("Enter Arrival Time and Burst Time for Process P%d: ", i + 1);
+        scanf("%d %d", &processes[i].arrival, &processes[i].burst);
+        processes[i].remaining = processes[i].burst;  // Initialize remaining time
+    }
+    
+    // Input the time quantum
+    printf("Enter the time quantum: ");
+    scanf("%d", &quantum);
+    
+    // Call the Round Robin function
+    roundRobin(processes, n, quantum);
+    
+    // Print the results
+    printProcessDetails(processes, n);
+    
+    // Calculate and display average turnaround and waiting times
+    calculateAverageTimes(processes, n);
+    
+    return 0;
+}
