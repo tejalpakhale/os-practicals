@@ -1,0 +1,100 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
+
+#define SIZE 5
+
+// Function to print an array
+void printArray(int arr[], int size) {
+    for (int i = 0; i < size; i++) {
+        printf("%d ", arr[i]);
+    }
+    printf("\n");
+}
+
+// Bubble sort algorithm
+void bubbleSort(int arr[], int size) {
+    for (int i = 0; i < size - 1; i++) {
+        for (int j = 0; j < size - i - 1; j++) {
+            if (arr[j] > arr[j + 1]) {
+                // Swap elements
+                int temp = arr[j];
+                arr[j] = arr[j + 1];
+                arr[j + 1] = temp;
+            }
+        }
+    }
+}
+
+// Quick sort algorithm
+void quickSort(int arr[], int low, int high) {
+    if (low < high) {
+        int pivot = arr[high];
+        int i = (low - 1);
+
+        // Partitioning
+        for (int j = low; j < high; j++) {
+            if (arr[j] < pivot) {
+                i++;
+                int temp = arr[i];
+                arr[i] = arr[j];
+                arr[j] = temp;
+            }
+        }
+        int temp = arr[i + 1];
+        arr[i + 1] = arr[high];
+        arr[high] = temp;
+
+        // Recursive calls
+        quickSort(arr, low, i);
+        quickSort(arr, i + 2, high);
+    }
+}
+
+int main() {
+    int arr[SIZE];
+    pid_t pid;
+    int status;
+
+    // Input integers to be sorted
+    printf("Enter %d integers:\n", SIZE);
+    for (int i = 0; i < SIZE; i++) {
+        scanf("%d", &arr[i]);
+    }
+
+    // Create child process using fork()
+    pid = fork();
+
+    if (pid < 0) {
+        // Error in fork()
+        perror("Fork failed");
+        exit(1);
+    }
+
+    // Parent process
+    if (pid > 0) {
+        printf("Parent Process: Sorting using Bubble Sort...\n");
+        bubbleSort(arr, SIZE); // Parent sorts using bubble sort
+        printf("Parent Process sorted array:\n");
+        printArray(arr, SIZE);
+        exit(0);
+
+        // Wait for child process to finish
+        wait(&status); // Parent waits for child process
+        printf("Parent Process finished waiting for child process\n");
+
+    }
+    // Child process
+    else if (pid == 0) {
+        printf("Child Process: Sorting using Quick Sort...\n");
+        quickSort(arr, 0, SIZE - 1); // Child sorts using quick sort
+        printf("Child Process sorted array:\n");
+        printArray(arr, SIZE);
+
+        exit(0);
+    }
+
+    return 0;
+}
