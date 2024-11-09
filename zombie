@@ -1,0 +1,66 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+
+#define SIZE 5  // Define the size of the array
+
+// Function to sort the array in ascending order
+void sortArray(int arr[], int size) {
+    for (int i = 0; i < size - 1; i++) {
+        for (int j = 0; j < size - i - 1; j++) {
+            if (arr[j] > arr[j + 1]) {
+                int temp = arr[j];
+                arr[j] = arr[j + 1];
+                arr[j + 1] = temp;
+            }
+        }
+    }
+}
+
+// Function to display the array in reverse order
+void displayArrayInReverse(int arr[], int size) {
+    printf("Array in reverse order:\n");
+    for (int i = size - 1; i >= 0; i--) {
+        printf("%d ", arr[i]);
+    }
+    printf("\n");
+}
+
+int main() {
+    int arr[SIZE];
+
+    // Input array elements
+    printf("Enter %d integers:\n", SIZE);
+    for (int i = 0; i < SIZE; i++) {
+        scanf("%d", &arr[i]);
+    }
+
+    // Sort the array in ascending order
+    sortArray(arr, SIZE);
+
+    printf("Parent Process: Sorted array:\n");
+    for (int i = 0; i < SIZE; i++) {
+        printf("%d ", arr[i]);
+    }
+    printf("\n");
+
+    // Forking a child process
+    pid_t pid = fork();
+
+    if (pid < 0) {
+        perror("Fork failed");
+        return 1;
+    }
+
+    if (pid == 0) {  // Child process
+        printf("Child Process: ");
+        displayArrayInReverse(arr, SIZE); 
+    } else {  // Parent process
+        wait(NULL);  // Wait for the child to finish
+        printf("Parent Process waited for the child until its complete\n");
+    }
+
+    return 0;
+}
