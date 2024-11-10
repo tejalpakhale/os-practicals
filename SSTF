@@ -1,82 +1,131 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-// Function to calculate absolute difference
-int abs_diff(int a, int b) {
-    return a > b ? a - b : b - a;
-}
+#define MAX_REQUESTS 100
 
-// Function to find the closest request in the specified direction
-int find_closest_in_direction(int requests[], int n, int head, int processed[], int direction) {
-    int min_distance = __INT_MAX__;
-    int closest_index = -1;
-
-    for (int i = 0; i < n; i++) {
-        if (!processed[i]) {
-            int distance = abs_diff(head, requests[i]);
-            // Check direction: moving away (requests[i] > head for increasing, or requests[i] < head for decreasing)
-            if ((direction == 1 && requests[i] >= head) || (direction == -1 && requests[i] <= head)) {
-                if (distance < min_distance) {
-                    min_distance = distance;
-                    closest_index = i;
-                }
+// Function to sort requests in ascending order
+void sort(int requests[], int n) {
+    for (int i = 0; i < n - 1; i++) {
+        for (int j = i + 1; j < n; j++) {
+            if (requests[i] > requests[j]) {
+                int temp = requests[i];
+                requests[i] = requests[j];
+                requests[j] = temp;
             }
         }
     }
-    return closest_index;
+}
+
+// Shortest Seek Time First (SSTF) Algorithm
+void SSTF(int requests[], int n, int head) {
+    int completed[MAX_REQUESTS] = {0};
+    int total_seek = 0;
+    int current = head;
+
+    printf("\nSSTF Seek Sequence: ");
+    for (int i = 0; i < n; i++) {
+        int min = 9999, idx = -1;
+        for (int j = 0; j < n; j++) {
+            if (!completed[j] && abs(current - requests[j]) < min) {
+                min = abs(current - requests[j]);
+                idx = j;
+            }
+        }
+        printf("%d -> ", requests[idx]);
+        total_seek += abs(current - requests[idx]);
+        current = requests[idx];
+        completed[idx] = 1;
+    }
+    printf("\nTotal Seek Time: %d\n", total_seek);
+}
+
+// SCAN Algorithm
+void SCAN(int requests[], int n, int head, int disk_size) {
+    int total_seek = 0;
+    int current = head;
+
+    // Sort the requests to process them in order
+    sort(requests, n);
+    printf("\nSCAN Seek Sequence: ");
+    
+    // Process requests in the direction of the head
+    for (int i = 0; i < n; i++) {
+        if (requests[i] >= head) {
+            for (int j = i; j < n; j++) {
+                printf("%d -> ", requests[j]);
+                total_seek += abs(current - requests[j]);
+                current = requests[j];
+            }
+            // Move to the end of the disk
+            total_seek += abs(current - (disk_size - 1));
+            current = disk_size - 1;
+
+            // Process remaining requests in reverse order
+            for (int j = i - 1; j >= 0; j--) {
+                printf("%d -> ", requests[j]);
+                total_seek += abs(current - requests[j]);
+                current = requests[j];
+            }
+            break;
+        }
+    }
+    
+    printf("\nTotal Seek Time: %d\n", total_seek);
+}
+
+// C-LOOK Algorithm
+void CLOOK(int requests[], int n, int head) {
+    int total_seek = 0;
+    int current = head;
+
+    // Sort the requests to process them in order
+    sort(requests, n);
+    printf("\nC-LOOK Seek Sequence: ");
+    
+    // Process requests in the direction of the head
+    for (int i = 0; i < n; i++) {
+        if (requests[i] >= head) {
+            for (int j = i; j < n; j++) {
+                printf("%d -> ", requests[j]);
+                total_seek += abs(current - requests[j]);
+                current = requests[j];
+            }
+            // Wrap around to the beginning for remaining requests
+            for (int j = 0; j < i; j++) {
+                printf("%d -> ", requests[j]);
+                total_seek += abs(current - requests[j]);
+                current = requests[j];
+            }
+            break;
+        }
+    }
+    
+    printf("\nTotal Seek Time: %d\n", total_seek);
 }
 
 int main() {
-    int n, head, total_movement = 0, direction;
+    int n, head, disk_size = 200;
 
-    // Input number of requests
-    printf("Enter the number of disk requests: ");
+    printf("Enter number of requests: ");
     scanf("%d", &n);
+    int requests[MAX_REQUESTS];
 
-    int requests[n], processed[n];
-
-    // Input disk requests
-    printf("Enter the disk request sequence: ");
+    printf("Enter the requests: ");
     for (int i = 0; i < n; i++) {
         scanf("%d", &requests[i]);
-        processed[i] = 0; // Initialize all requests as unprocessed
     }
 
-    // Input initial head position
-    printf("Enter the initial head position: ");
+    printf("Enter initial head position: ");
     scanf("%d", &head);
-
-    // Input initial direction (1 for moving away from spindle (increasing), -1 for moving towards spindle (decreasing))
-    printf("Enter initial direction (1 for increasing, -1 for decreasing): ");
-    scanf("%d", &direction);
-
-    printf("\nDisk Scheduling (SSTF):\n");
-    printf("Initial Head Position: %d\n", head);
-
-    // Process each request using SSTF
-    for (int i = 0; i < n; i++) {
-        int closest_index = find_closest_in_direction(requests, n, head, processed, direction);
-
-        // If no request found in the current direction, switch direction
-        if (closest_index == -1) {
-            direction *= -1; // Change direction
-            closest_index = find_closest_in_direction(requests, n, head, processed, direction);
-        }
-
-        // Process the found request
-        if (closest_index != -1) {
-            int movement = abs_diff(head, requests[closest_index]);
-            total_movement += movement;
-            head = requests[closest_index];
-            processed[closest_index] = 1;
-
-            // Display head movement for each step
-            printf("Moving head to %d (Seek time: %d)\n", head, movement);
-        }
-    }
-
-    // Display total head movement
-    printf("\nTotal Head Movement: %d\n", total_movement);
-
+    
+    // SSTF Algorithm
+    SSTF(requests, n, head);
+    
+    // SCAN Algorithm
+    SCAN(requests, n, head, disk_size);
+    
+    // C-LOOK Algorithm
+    CLOOK(requests, n, head);
+    
     return 0;
 }
