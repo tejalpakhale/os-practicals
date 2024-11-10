@@ -80,7 +80,7 @@ int main() {
         bubbleSort(arr, SIZE); // Parent sorts using bubble sort
         printf("Parent Process sorted array:\n");
         printArray(arr, SIZE);
-        exit(0);
+        //exit(0);
 
         // Wait for child process to finish
         wait(&status); // Parent waits for child process
