@@ -1,0 +1,82 @@
+#include <stdio.h>
+
+int main() {
+    int n, frames, pages[30], frame[10], pageFaults = 0, pageHits = 0;
+    int i, j, k;
+    int recent[10]; // Array to keep track of the recent usage of each frame
+
+    // Input number of pages
+    printf("Enter the number of pages in the reference string: ");
+    scanf("%d", &n);
+
+    // Input reference string
+    printf("Enter the reference string: ");
+    for (i = 0; i < n; i++) {
+        scanf("%d", &pages[i]);
+    }
+
+    // Input number of frames (minimum 3)
+    do {
+        printf("Enter the number of frames (minimum 3): ");
+        scanf("%d", &frames);
+        if (frames < 3) {
+            printf("Frame size must be at least 3. Please try again.\n");
+        }
+    } while (frames < 3);
+
+    // Initialize frames and recent usage trackers
+    for (i = 0; i < frames; i++) {
+        frame[i] = -1;
+        recent[i] = 0;
+    }
+
+    printf("\nPage Replacement Process (LRU):\n");
+
+    // Process each page in the reference string
+    for (i = 0; i < n; i++) {
+        int found = 0;
+
+        // Check if page is already in any frame (page hit)
+        for (j = 0; j < frames; j++) {
+            if (frame[j] == pages[i]) {
+                found = 1;
+                pageHits++;
+                recent[j] = i; // Update recent usage for the frame
+                break;
+            }
+        }
+
+        // If page not found, replace using LRU (page fault)
+        if (found == 0) {
+            int lru = 0;
+
+            // Find the frame that was least recently used
+            for (j = 1; j < frames; j++) {
+                if (recent[j] < recent[lru]) {
+                    lru = j;
+                }
+            }
+
+            // Replace the least recently used frame with the new page
+            frame[lru] = pages[i];
+            recent[lru] = i; // Update recent usage for the frame
+            pageFaults++;
+        }
+
+        // Display current frames' status
+        printf("Page %d: [", pages[i]);
+        for (j = 0; j < frames; j++) {
+            if (frame[j] != -1)
+                printf(" %d ", frame[j]);
+            else
+                printf(" - ");
+        }
+        printf("]\n");
+    }
+
+    // Print total page faults and page hits
+    printf("\nTotal Page Faults: %d\n", pageFaults);
+    printf("Total Page Hits: %d\n", pageHits);
+
+    return 0;
+}
