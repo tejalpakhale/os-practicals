@@ -1,0 +1,60 @@
+#include <stdio.h>
+
+int main() {
+    int n, frames, pages[30], frame[10], pageFaults = 0, pageHits = 0;
+    int i, j, k = 0;
+
+    printf("Enter the number of pages :");
+    scanf("%d", &n);
+
+    printf("Enter page numbers :");
+    for (i = 0; i < n; i++) {
+        scanf("%d", &pages[i]);
+    }
+
+    
+    do {
+        printf("Enter the number of frames (minimum 3): ");
+        scanf("%d", &frames);
+        if (frames < 3) {
+            printf("Frame size must be at least 3. Please try again.\n");
+        }
+    } while (frames < 3);
+    
+    for (i = 0; i < frames; i++) {
+        frame[i] = -1;
+    }
+
+    printf("\nPage Replacement Process FCFS:\n");
+
+    for (i = 0; i < n; i++) {
+        int found = 0;
+
+        for (j = 0; j < frames; j++) {
+            if (frame[j] == pages[i]) {
+                found = 1;
+                pageHits++;
+                break;
+            }
+        }
+
+        if (found == 0) {
+            frame[k] = pages[i];
+            k = (k + 1) % frames; 
+            pageFaults++;
+        }
+
+        printf("Page %d: [", pages[i]);
+        for (j = 0; j < frames; j++) {
+            if (frame[j] != -1)
+                printf(" %d ", frame[j]);
+            else
+                printf(" - ");
+        }
+        printf("]\n");
+    }
+    printf("\nTotal Page Faults: %d\n", pageFaults);
+    printf("Total Page Hits: %d\n", pageHits);
+
+    return 0;
+}
