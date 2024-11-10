@@ -1,0 +1,82 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+// Function to calculate absolute difference
+int abs_diff(int a, int b) {
+    return a > b ? a - b : b - a;
+}
+
+// Function to find the closest request in the specified direction
+int find_closest_in_direction(int requests[], int n, int head, int processed[], int direction) {
+    int min_distance = __INT_MAX__;
+    int closest_index = -1;
+
+    for (int i = 0; i < n; i++) {
+        if (!processed[i]) {
+            int distance = abs_diff(head, requests[i]);
+            // Check direction: moving away (requests[i] > head for increasing, or requests[i] < head for decreasing)
+            if ((direction == 1 && requests[i] >= head) || (direction == -1 && requests[i] <= head)) {
+                if (distance < min_distance) {
+                    min_distance = distance;
+                    closest_index = i;
+                }
+            }
+        }
+    }
+    return closest_index;
+}
+
+int main() {
+    int n, head, total_movement = 0, direction;
+
+    // Input number of requests
+    printf("Enter the number of disk requests: ");
+    scanf("%d", &n);
+
+    int requests[n], processed[n];
+
+    // Input disk requests
+    printf("Enter the disk request sequence: ");
+    for (int i = 0; i < n; i++) {
+        scanf("%d", &requests[i]);
+        processed[i] = 0; // Initialize all requests as unprocessed
+    }
+
+    // Input initial head position
+    printf("Enter the initial head position: ");
+    scanf("%d", &head);
+
+    // Input initial direction (1 for moving away from spindle (increasing), -1 for moving towards spindle (decreasing))
+    printf("Enter initial direction (1 for increasing, -1 for decreasing): ");
+    scanf("%d", &direction);
+
+    printf("\nDisk Scheduling (SSTF):\n");
+    printf("Initial Head Position: %d\n", head);
+
+    // Process each request using SSTF
+    for (int i = 0; i < n; i++) {
+        int closest_index = find_closest_in_direction(requests, n, head, processed, direction);
+
+        // If no request found in the current direction, switch direction
+        if (closest_index == -1) {
+            direction *= -1; // Change direction
+            closest_index = find_closest_in_direction(requests, n, head, processed, direction);
+        }
+
+        // Process the found request
+        if (closest_index != -1) {
+            int movement = abs_diff(head, requests[closest_index]);
+            total_movement += movement;
+            head = requests[closest_index];
+            processed[closest_index] = 1;
+
+            // Display head movement for each step
+            printf("Moving head to %d (Seek time: %d)\n", head, movement);
+        }
+    }
+
+    // Display total head movement
+    printf("\nTotal Head Movement: %d\n", total_movement);
+
+    return 0;
+}
