@@ -28,32 +28,6 @@ void bubbleSort(int arr[], int size) {
         }
     }
 }
-
-// Quick sort algorithm
-void quickSort(int arr[], int low, int high) {
-    if (low < high) {
-        int pivot = arr[high];
-        int i = (low - 1);
-
-        // Partitioning
-        for (int j = low; j < high; j++) {
-            if (arr[j] < pivot) {
-                i++;
-                int temp = arr[i];
-                arr[i] = arr[j];
-                arr[j] = temp;
-            }
-        }
-        int temp = arr[i + 1];
-        arr[i + 1] = arr[high];
-        arr[high] = temp;
-
-        // Recursive calls
-        quickSort(arr, low, i);
-        quickSort(arr, i + 2, high);
-    }
-}
-
 int main() {
     int arr[SIZE];
     pid_t pid;
@@ -89,8 +63,8 @@ int main() {
     }
     // Child process
     else if (pid == 0) {
-        printf("Child Process: Sorting using Quick Sort...\n");
-        quickSort(arr, 0, SIZE - 1); // Child sorts using quick sort
+        printf("Child Process: Sorting using bubble sort Sort...\n");
+        bubbleSort(arr, SIZE); // Child sorts using quick sort
         printf("Child Process sorted array:\n");
         printArray(arr, SIZE);
 
